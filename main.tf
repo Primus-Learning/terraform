@@ -1,52 +1,51 @@
 terraform {
   required_providers {
     aws = {
-      source = "hashicorp/aws"
+      source  = "hashicorp/aws"
       version = "4.52.0"
     }
   }
 }
 
 provider "aws" {
-    region = "us-east-1"
+  region = "us-east-1"
 }
 
-variable "vpc_cidr_block" {
-  description = "vpc cidr block"
-}
+variable "vpc_cidr_block" {}
+variable "subnet_cidr_block" {}
+variable "avail_zone" {}
+variable "env_prefix" {}
 
-variable "subnet_cidr_block" {
-  description = "subnet cidr block"
-}
-
-variable "availability_zone" {
-  description = "name of availability zone"
-}
-
-variable "environment" {
-  description = "name of environment"
-}
-
-resource "aws_vpc" "development-vpc" {
+resource "aws_vpc" "myapp-vpc" {
   cidr_block = var.vpc_cidr_block
   tags = {
-    Name : "${var.environment}-vpc"
+    Name = "${var.env_prefix}-vpc"
   }
 }
 
-resource "aws_subnet" "dev-subnet-1" {
-  vpc_id     = aws_vpc.development-vpc.id
-  cidr_block = var.subnet_cidr_block
-  availability_zone = var.availability_zone
+resource "aws_subnet" "myapp-subnet-1" {
+  vpc_id            = aws_vpc.myapp-vpc.id
+  cidr_block        = var.subnet_cidr_block
+  availability_zone = var.avail_zone
   tags = {
-    Name : "${var.environment}-subnet"
+    Name = "${var.env_prefix}-subnet-1"
   }
 }
 
-output "dev-vpc-id" {
-  value = aws_vpc.development-vpc.id
+resource "aws_internet_gateway" "myapp-igw" {
+  vpc_id = aws_vpc.myapp-vpc.id
+  tags = {
+    Name = "${var.env_prefix}-igw"
+  }
 }
 
-output "dev-subnet-id" {
-    value = aws_subnet.dev-subnet-1.id
+resource "aws_default_route_table" "main-rtb" {
+  default_route_table_id = aws_vpc.myapp-vpc.default_route_table_id
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.myapp-igw.id
+  }
+  tags = {
+    Name = "${var.env_prefix}-main-rtb"
+  }
 }
