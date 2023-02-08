@@ -1,52 +1,30 @@
-terraform {
-  required_providers {
-    aws = {
-      source = "hashicorp/aws"
-      version = "4.52.0"
-    }
-  }
-}
+module "redis" {
+  source = "umotif-public/elasticache-redis/aws"
+  version = "~> 3.0.0"
 
-provider "aws" {
-    region = "us-east-1"
-}
+  name_prefix = "terraform-elasticache"
+  num_cache_clusters = 1
+  node_type = var.node_type
+  engine_version = "6.x"
+  port = 6379
+  maintenance_window = "mon:03:00-mon:04:00"
+  snapshot_window          = "04:00-06:00"
+  snapshot_retention_limit = 7
 
-variable "vpc_cidr_block" {
-  description = "vpc cidr block"
-}
+  automatic_failover_enabled = true
+  at_rest_encryption_enabled = true
+  transit_encryption_enabled = false
 
-variable "subnet_cidr_block" {
-  description = "subnet cidr block"
-}
+  apply_immediately = true
+  family            = "redis6.x"
+  description       = "Creating elasticahe redis using terraform"
 
-variable "availability_zone" {
-  description = "name of availability zone"
-}
+  subnet_ids = var.subnet_ids
+  vpc_id = var.vpc_id
 
-variable "environment" {
-  description = "name of environment"
-}
+  ingress_cidr_blocks = ["0.0.0.0/0"]
 
-resource "aws_vpc" "development-vpc" {
-  cidr_block = var.vpc_cidr_block
   tags = {
-    Name : "${var.environment}-vpc"
+    Project = "Terraform"
   }
-}
-
-resource "aws_subnet" "dev-subnet-1" {
-  vpc_id     = aws_vpc.development-vpc.id
-  cidr_block = var.subnet_cidr_block
-  availability_zone = var.availability_zone
-  tags = {
-    Name : "${var.environment}-subnet"
-  }
-}
-
-output "dev-vpc-id" {
-  value = aws_vpc.development-vpc.id
-}
-
-output "dev-subnet-id" {
-    value = aws_subnet.dev-subnet-1.id
 }
