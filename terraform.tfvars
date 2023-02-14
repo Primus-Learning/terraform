@@ -1,4 +1,4 @@
 db_name="mydb"
-engine="mysql"
-engine_version="5.7"
-instance_class="db.t3.micro"
+engine="aurora-postgresql"
+engine_version="13.3"
+instance_class="db.t3.medium"
