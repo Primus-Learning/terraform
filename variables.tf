@@ -1,3 +1,6 @@
-variable "vpc_cidr_block" {}
-variable "private_subnet_cidr_blocks" {}
-variable "public_subnet_cidr_blocks" {}
+variable "db_name" {}
+variable "engine" {}
+variable "engine_version" {}
+variable "instance_class" {}
+variable "username" {}
+variable "password" {}
